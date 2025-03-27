@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigation from "./src/navigations/AuthNavigation";
 import "./global.css";
 import { verifyInstallation } from "nativewind";
+import { HomeScreen } from "./src/containers";
 
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
     // </SafeAreaView>
     <NavigationContainer>
       <AuthNavigation />
+      {/* <HomeScreen /> */}
     </NavigationContainer>
   );
 }

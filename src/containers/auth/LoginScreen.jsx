@@ -6,51 +6,109 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, TextInput } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import BGImg from "../../../assets/images/smart-H3.jpg";
 import { WindowHeight, WindowWidth } from "../../utils/Variables";
-import axios from "axios";
 
-let url = "http://192.168.43.15:4000/";
+let url = "http://0.0.0.0:4000/";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [Showpassword, setShowPassword] = useState(true);
-  const submit = async () => {
-    console.log(email)
-    console.log(password)
-    await axios
-      .post(`${url}user/login`, { email, password })
-      .then((res) => {
-        console.log(res)
-        // if (res.data && res.data.success) {
-        //   Alert.alert("Welcome", "Enjoy our app Mr(s)" + res.data.data?.name, [
-        //     { text: "Ok" },
-        //   ]);
-        //   return navigation.reset(`main`);
-        // } else {
-        //   Alert.alert("Error", res.data.message || "Unknown error", [
-        //     { text: "Ok" },
-        //   ]);
-        // }
-      })
-      .catch((error) => {
-        console.log(error);
-        Alert.alert("Error", "Something went wrong mobile!", [
-          {
-            text: "Cancel",
-            onPress: () => console.log("Cancel Pressed"),
-            style: "cancel",
-          },
-          { text: "OK", onPress: () => console.log("OK Pressed") },
-        ]);
-      });
+
+  // Fonction pour stocker les données utilisateur après connexion
+  const storeUserData = async (userData) => {
+    try {
+      const jsonValue = JSON.stringify(userData);
+      await AsyncStorage.setItem("userData", jsonValue);
+    } catch (e) {
+      console.error("Error saving user data", e);
+    }
   };
+
+  // Fonction pour récupérer les données utilisateur stockées
+  const getUserData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("userData");
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+     
+      // if (jsonValue != null) {
+      //   return JSON.parse(jsonValue)
+      // } else {
+      //  return  null
+      // }
+
+
+    } catch (e) {
+      console.error("Error loading user data", e);
+    }
+  };
+
+  // Vérifier si un utilisateur est déjà connecté au démarrage
+  useEffect(() => {
+    const checkUserSession = async () => {
+      const userData = await getUserData();
+      if (userData) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "main" }],
+        });
+      }
+    };
+    checkUserSession();
+  }, []);
+
+  // Fonction de connexion
+  const submit = async () => {
+    console.log(email);
+    console.log(password);
+    try {
+      const res = await axios.post(`${url}user/login`, { email, password });
+      console.log(res);
+
+      if (res.data && res.data.success) {
+        const userData = res.data.data;
+        await storeUserData(userData); // Stocker les infos de l'utilisateur
+
+        Alert.alert("Welcome", "Enjoy our app Mr(s) " + userData?.name, [
+          { text: "Ok" },
+        ]);
+
+        // Navigation après connexion réussie
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "main" }],
+        });
+      } else {
+        Alert.alert("Error", res.data?.message || "Unknown error", [
+          { text: "Ok" },
+        ]);
+      }
+    } catch (error) {
+      if (error.response) {
+        console.log("Error response:", error.response);
+        Alert.alert(
+          "Error",
+          error.response.data.message || "Authentication failed",
+          [{ text: "OK" }]
+        );
+      } else {
+        console.log("Error:", error);
+        Alert.alert("Error", error.message || "Something went wrong", [
+          { text: "OK" },
+        ]);
+      }
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      {/* Background Image & Gradient Overlay */}
       <View style={styles.backgroundContainer}>
         <Image source={BGImg} style={styles.backgroundImage} />
         <LinearGradient
@@ -59,6 +117,7 @@ const LoginScreen = ({ navigation }) => {
         />
       </View>
 
+      {/* Login Form */}
       <View style={styles.textContainer}>
         <Text style={styles.title}>WELCOME!</Text>
 
@@ -84,7 +143,6 @@ const LoginScreen = ({ navigation }) => {
           }
           style={styles.input}
           textColor="white"
-          outlineColor="white"
         />
         <View style={styles.edView}>
           <TouchableOpacity onPress={() => navigation.navigate("forgetpass")}>
@@ -98,6 +156,7 @@ const LoginScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
         </View>
+
         <View style={styles.btnContainer}>
           <Button
             icon="lock"
@@ -176,7 +235,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 0,
   },
-
   endTxt: {
     fontSize: 15,
     fontWeight: "bold",

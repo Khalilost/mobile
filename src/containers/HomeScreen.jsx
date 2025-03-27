@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, Switch, TouchableOpacity, FlatList, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Switch, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { WindowHeight, WindowWidth } from "../utils/Variables";
 
 const HomeScreen = () => {
   const [devices, setDevices] = useState([
@@ -47,52 +48,47 @@ const HomeScreen = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <Text style={styles.header}>Welcome Home</Text>
+    <FlatList
+      data={devices}
+      renderItem={renderDevice}
+      keyExtractor={(item) => item.id.toString()}
+      numColumns={2}
+      contentContainerStyle={styles.container}
+      ListHeaderComponent={
+        <>
+          <Text style={styles.header}>Welcome Home</Text>
 
-      {/* Shortcuts */}
-      <Text style={styles.sectionTitle}>Shortcuts</Text>
-      <FlatList
-        data={shortcuts}
-        renderItem={renderShortcut}
-        keyExtractor={(item) => item.id.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.shortcutsContainer}
-      />
+          {/* Shortcuts */}
+          <Text style={styles.sectionTitle}>Shortcuts</Text>
+          <FlatList
+            data={shortcuts}
+            renderItem={renderShortcut}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.shortcutsContainer}
+          />
 
-      {/* Devices Section */}
-      <View style={styles.devicesSection}>
-        {/* Devices and Add Device Button */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-          <Text style={[styles.sectionTitle, { flex: 1 }]}>Devices</Text>
-
-          <TouchableOpacity style={{ flexDirection: 'row', flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
-            <Icon name="plus" size={24} color="black" style={{ marginLeft: 8 }} />
-            <Text style={styles.sectionTitle}>Add device</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Device List (Grid) */}
-        <FlatList
-          data={devices}
-          renderItem={renderDevice}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2} // Grid layout with two columns
-          contentContainerStyle={styles.devicesContainer}
-        />
-      </View>
-    </ScrollView>
+          {/* Devices Header + Add Button */}
+          <View style={styles.deviceHeader}>
+            <Text style={styles.sectionTitle}>Devices</Text>
+            <TouchableOpacity style={styles.addDeviceButton}>
+              <Icon name="plus" size={24} color="black" />
+              <Text style={styles.sectionTitle}>Add device</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  container: { padding: 20, backgroundColor: "#f5f5f5" },
   header: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
 
-  // Shortcut styles
+  // Shortcuts
   shortcutsContainer: { marginBottom: 20 },
   shortcutCard: {
     padding: 15,
@@ -101,42 +97,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 10,
     elevation: 2,
-    width: 100, // Make each shortcut the same width
+    width: 100,
     justifyContent: "center",
   },
   shortcutText: { fontSize: 14, marginTop: 5, color: "#000" },
 
-  // Devices Section (Grid Layout)
-  devicesSection: { position: "relative" },
-  devicesContainer: {
+  // Devices
+  deviceHeader: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
-    marginBottom: 60, // Make space for the add device button
+    alignItems: "center",
+    marginBottom: 10,
   },
   deviceCard: {
-    width: "48%", // Ensure two devices per row
+    width: "48%",
     marginBottom: 10,
-    marginRight: "4%", // Add space between columns
     padding: 20,
     backgroundColor: "#fff",
     borderRadius: 10,
     alignItems: "center",
     elevation: 2,
+    marginHorizontal: 5,
   },
   deviceActive: { backgroundColor: "#4CAF50" },
   deviceText: { fontSize: 16, marginVertical: 5, color: "#000" },
   deviceTextActive: { fontSize: 16, marginVertical: 5, color: "#fff" },
 
-  // Add Device button styles
   addDeviceButton: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 50,
-    elevation: 5,
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
 
